@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+.venv/
+venv/
+__pycache__/
+.env
+.env.local
+.vercel/
+*.log
+*.db
+.DS_Store
+
+# local db probe/debug scripts (contain credentials)
+_probe_*.mjs
+_test_db.mjs
+_probe_*.py
+_dump*.py
+_dw_payload*
