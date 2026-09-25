@@ -15,11 +15,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from qrcard import BASE, UA, check_public, draw_card
+from qrcard import BASE, UA, check_public, draw_card, data_dir
 from crawler import crawl_store, IMAGES_DIR
 from tinydb import TinyDB, Query
 
-DATA = BASE / "data"; DATA.mkdir(exist_ok=True)
+DATA = data_dir()
 CATALOG_FILE = DATA / "catalog.json"
 TINY = TinyDB(str(DATA / "tryvtri.db"))
 CAPTION = "Scan to try it on"
@@ -497,4 +497,4 @@ def export(b: Export, cred: str = Depends(get_session)):
     return Response(buf.getvalue(), media_type="application/zip",
                     headers={"Content-Disposition": 'attachment; filename="tryvtri-qr-codes.zip"'})
 
-app.mount("/", StaticFiles(directory=BASE.parent / "frontend", html=True), name="ui")
+app.mount("/", StaticFiles(directory=BASE / "frontend", html=True), name="ui")

@@ -16,7 +16,9 @@ from urllib.parse import urljoin, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
-DATA_DIR = Path(__file__).parent / "data"
+from qrcard import data_dir
+
+DATA_DIR = data_dir()
 IMAGES_DIR = DATA_DIR / "images"
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -8,6 +8,31 @@ from qrcode.constants import ERROR_CORRECT_H
 
 BASE = Path(__file__).parent
 LOGO_URL = os.getenv("LOGO_URL", "https://fit.tryvtri.com/logo.png")
+
+_DATA_DIR = None
+
+
+def data_dir() -> Path:
+    """Bundled data/ when writable, otherwise /tmp (serverless read-only fs)."""
+    global _DATA_DIR
+    if _DATA_DIR is not None:
+        return _DATA_DIR
+    bundled = BASE / "data"
+    chosen = bundled
+    try:
+        bundled.mkdir(parents=True, exist_ok=True)
+        probe = bundled / ".writable"
+        probe.write_text("ok")
+        probe.unlink()
+    except OSError:
+        chosen = Path(os.getenv("TMPDIR", "/tmp")) / "tryvtri-data"
+        chosen.mkdir(parents=True, exist_ok=True)
+        for name in ("catalog.json", "tryvtri.db"):
+            if not (chosen / name).exists() and (bundled / name).exists():
+                (chosen / name).write_bytes((bundled / name).read_bytes())
+    _DATA_DIR = chosen
+    return chosen
+
 BRAND = os.getenv("BRAND_TEXT", "TRYVTRI")
 GREEN, DARK, GREY = (22, 163, 74), (17, 24, 39), (107, 114, 128)
 UA = {"User-Agent": "Mozilla/5.0 TRYVTRI-QR"}
