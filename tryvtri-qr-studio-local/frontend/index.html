@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TRYVTRI QR Studio</title>
+  <link rel="icon" href="https://fit.tryvtri.com/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --card: #fff;
+      --line: #e7e5e4;
+      --ink: #111827;
+      --mute: #6b7280;
+      --green: #16a34a;
+      --green-d: #15803d;
+      --tint: #ecfdf3;
+      --red: #b91c1c;
+      --redt: #fef2f2
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.5
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 248px 1fr;
+      min-height: 100vh
+    }
+
+    .side {
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 6px
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      object-fit: contain;
+      background: var(--tint)
+    }
+
+    .brand b {
+      display: block;
+      font-size: 17px;
+      letter-spacing: .02em
+    }
+
+    .brand small {
+      color: var(--mute);
+      font-size: 12.5px
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px
+    }
+
+    .nav button {
+      all: unset;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #44403c;
+      font-weight: 500;
+      border-left: 3px solid transparent
+    }
+
+    .nav button:hover {
+      background: #f5f5f4
+    }
+
+    .nav button.on {
+      background: var(--tint);
+      color: var(--green-d);
+      border-left-color: var(--green)
+    }
+
+    .nav button:focus-visible,
+    .btn:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 2px
+    }
+
+    .foot {
+      margin-top: auto;
+      color: var(--mute);
+      font-size: 12.5px;
+      padding: 0 6px
+    }
+
+    main {
+      padding: 28px 36px 60px;
+      max-width: 1120px;
+      width: 100%
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 4px;
+      letter-spacing: -.02em
+    }
+
+    .sub {
+      color: var(--mute);
+      margin: 0 0 24px
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .04)
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 0 0 4px
+    }
+
+    label.f {
+      display: block;
+      font-weight: 500;
+      font-size: 13.5px;
+      margin: 16px 0 6px
+    }
+
+    textarea,
+    input[type=text] {
+      width: 100%;
+      border: 1px solid #d6d3d1;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink)
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 13.5px
+    }
+
+    .chk {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      cursor: pointer
+    }
+
+    .chk input {
+      accent-color: var(--green);
+      width: 16px;
+      height: 16px
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px
+    }
+
+    .btn {
+      all: unset;
+      box-sizing: border-box;
+      cursor: pointer;
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14.5px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      text-align: center
+    }
+
+    .btn:hover {
+      background: #f5f5f4
+    }
+
+    .btn.pri {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff
+    }
+
+    .btn.pri:hover {
+      background: var(--green-d)
+    }
+
+    .btn.d {
+      color: var(--red)
+    }
+
+    .btn[disabled] {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 20px
+    }
+
+    .res {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .res .n {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .res .u {
+      color: var(--mute);
+      font-size: 12.5px;
+      word-break: break-all
+    }
+
+    .res .ph {
+      aspect-ratio: 1;
+      background: var(--tint);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: var(--mute);
+      font-size: 13px
+    }
+
+    .res img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--line)
+    }
+
+    .res select {
+      width: 100%
+    }
+
+    .empty {
+      color: var(--mute);
+      border: 1px dashed #d6d3d1;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 20px
+    }
+
+    .hist {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .hist:last-child {
+      border: 0
+    }
+
+    .hist div {
+      min-width: 0
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: center;
+      margin: 20px 0 4px
+    }
+
+    .bar input[type=text],
+    .bar select {
+      width: auto;
+      min-width: 200px
+    }
+
+    select {
+      border: 1px solid #d6d3d1;
+      border-radius: 8px;
+      padding: 10px;
+      font: inherit;
+      background: #fff
+    }
+
+    .sku,
+    .code {
+      font-weight: 700;
+      color: var(--green-d);
+      font-size: 15px
+    }
+
+    .lnk {
+      all: unset;
+      cursor: pointer;
+      color: var(--green-d);
+      font-size: 13px;
+      text-decoration: underline
+    }
+
+    .qrb {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff
+    }
+
+    .qrb.ok {
+      color: var(--green-d);
+      background: var(--tint);
+      border-color: #bbf7d0
+    }
+
+    .qrb.no {
+      color: var(--mute);
+      background: #f5f5f4
+    }
+
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #a8a29e
+    }
+
+    .dot.ok {
+      background: var(--green)
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: #fff;
+      padding: 11px 18px;
+      border-radius: 8px;
+      z-index: 9
+    }
+
+    #toast.bad {
+      background: var(--red)
+    }
+
+    .sub b {
+      color: var(--ink)
+    }
+
+    .back {
+      all: unset;
+      cursor: pointer;
+      color: var(--green-d);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: inline-block
+    }
+
+    .bkhead {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap
+    }
+
+    @media(max-width:860px) {
+      .app {
+        display: block
+      }
+
+      .side {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line)
+      }
+
+      .nav {
+        flex-direction: row
+      }
+
+      .foot {
+        display: none
+      }
+
+      main {
+        padding: 20px 16px 48px
+      }
+
+      .two {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><img src="https://fit.tryvtri.com/logo.png" alt="" onerror="this.style.visibility='hidden'">
+        <div><b>TRYVTRI</b><small>QR Studio</small></div>
+      </div>
+      <nav class="nav">
+        <button data-v="products" class="on">Products</button>
+        <button data-v="brands">Brands</button>
+      </nav>
+      <div class="foot">Codes open the product page where the try-on widget is live. Runs only on this computer &mdash;
+        nothing is uploaded anywhere.</div>
+    </aside>
+    <main>
+      <section id="v-products">
+        <h1>Products</h1>
+        <p class="sub">Your catalog, with URL, SKU and QR status for every product.</p>
+        <div class="two">
+          <div class="card">
+            <h2>Import a whole store</h2>
+            <p class="sub" style="margin:0 0 10px">Works with Shopify stores.</p>
+            <input type="text" id="store" placeholder="cougar.com.pk">
+            <div class="row"><button class="btn pri" id="imp">Import catalog</button></div>
+          </div>
+          <div class="card">
+            <h2>Add product links</h2>
+            <p class="sub" style="margin:0 0 10px">One link per line.</p>
+            <textarea id="urls" style="min-height:64px"
+              placeholder="https://cougar.com.pk/products/fine-knit-polo-ple608"></textarea>
+            <div class="row"><button class="btn" id="addl">Add links</button></div>
+          </div>
+        </div>
+        <div class="bar">
+          <input type="text" id="q" placeholder="Search by name or SKU">
+          <label class="chk">QR for <select id="bsel">
+              <option value="0">All brands (same code)</option>
+            </select></label>
+          <label class="chk"><input type="checkbox" id="pb">Separate codes per brand in ZIP</label>
+          <button class="btn pri" id="exp">Download ZIP</button><span class="sub" id="cnt" style="margin:0"></span>
+        </div>
+        <div class="empty" id="pe" hidden>No products yet. Import your store or add product links above.</div>
+        <div class="grid" id="pg"></div>
+      </section>
+
+      <section id="v-brands" hidden>
+        <h1>Brands</h1>
+        <p class="sub">Click a brand to open it: rename it there and see all of its products with URL, SKU and QR
+          status.</p>
+        <div class="card"><label class="f" for="bn" style="margin-top:0">Brand names, separated by commas</label>
+          <input type="text" id="bn" placeholder="TRYVTRI, Cougar, Fashion">
+          <div class="row"><button class="btn pri" id="bad">Add brands</button></div>
+        </div>
+        <div class="card" style="margin-top:16px" id="bl"></div>
+      </section>
+
+      <section id="v-brand" hidden>
+        <button class="back" id="bkback">&larr; All brands</button>
+        <div class="bkhead">
+          <div>
+            <h1 id="bktitle">Brand</h1>
+            <p class="sub" style="margin:0" id="bksub"></p>
+          </div>
+        </div>
+        <div class="two" style="margin-top:20px">
+          <div class="card">
+            <h2>Rename brand</h2>
+            <label class="f" for="bkrn">Brand name</label>
+            <input type="text" id="bkrn">
+            <div class="row">
+              <button class="btn pri" id="bksave">Save name</button>
+              <button class="btn d" id="bkdel">Delete brand</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Add product links to this brand</h2>
+            <p class="sub" style="margin:0 0 10px">One link per line. They land in this brand.</p>
+            <textarea id="bkurls" style="min-height:64px"
+              placeholder="https://cougar.com.pk/products/fine-knit-polo-ple608"></textarea>
+            <div class="row"><button class="btn" id="bkadd">Add links</button></div>
+          </div>
+        </div>
+        <div class="bar">
+          <span class="sub" style="margin:0" id="bkcnt"></span>
+          <button class="btn pri" id="bkexp">Download brand ZIP</button>
+        </div>
+        <div class="empty" id="bkempty" hidden>No products in this brand yet. Add links above, or assign products
+          from the Products page.</div>
+        <div class="grid" id="bkpg"></div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" hidden></div>
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    let brands = [], prods = [], sel = new Set(), curBrand = null;
+    function toast(m, bad) { const t = $('toast'); t.textContent = m; t.className = bad ? 'bad' : ''; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 4000) }
+    let TOK = localStorage.getItem('tv_tok') || '';
+    async function ensureToken() {
+      if (TOK) return TOK;
+      const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'IBRI', password: 'I_1B2' }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.token) throw new Error(d.detail || 'Login failed');
+      TOK = d.token; localStorage.setItem('tv_tok', TOK); return TOK
+    }
+    async function api(p, o = {}) {
+      if (o.auth !== false && !TOK) { try { await ensureToken() } catch { } }
+      const h = { 'Content-Type': 'application/json' };
+      if (TOK) h['Authorization'] = 'Bearer ' + TOK;
+      const r = await fetch('/api' + p, { method: o.method || 'GET', headers: h, body: o.body ? JSON.stringify(o.body) : undefined });
+      if (r.status === 401 && o.auth !== false) {
+        TOK = ''; localStorage.removeItem('tv_tok'); await ensureToken();
+        return api(p, { ...o, auth: false })
+      }
+      if (!r.ok) { let d = 'Something went wrong'; try { d = (await r.json()).detail || d } catch { } throw new Error(typeof d === 'string' ? d : 'Check the values you entered') }
+      return r
+    }
+    const safe = f => async (...a) => { try { await f(...a) } catch (e) { toast(e.message, 1) } };
+    const on = (id, f) => $(id).onclick = safe(f);
+
+    function show(v) {
+      ['products', 'brands', 'brand'].forEach(x => $('v-' + x).hidden = x !== v);
+      const navv = v === 'brand' ? 'brands' : v;
+      document.querySelectorAll('.nav button[data-v]').forEach(x => x.classList.toggle('on', x.dataset.v === navv))
+    }
+    document.querySelectorAll('.nav button[data-v]').forEach(b => b.onclick = () => show(b.dataset.v));
+
+    function brandOpts(selected) {
+      return '<option value="">No brand</option>' + brands.map(b => `<option value="${b.id}"${b.id === selected ? ' selected' : ''}>${esc(b.name)}</option>`).join('')
+    }
+
+    async function loadBrands() {
+      brands = await (await api('/brands')).json();
+      const prev = $('bsel').value;
+      $('bsel').innerHTML = '<option value="0">All brands (same code)</option>' + brands.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+      if ([...$('bsel').options].some(o => o.value === prev)) $('bsel').value = prev;
+      $('bl').innerHTML = brands.length ? brands.map(b => `<div class="hist">
+          <div><button class="lnk" data-o="${b.id}" style="font-size:15px;font-weight:600">${esc(b.name)}</button>
+            <div class="sub" style="margin:0">${b.count} product${b.count === 1 ? '' : 's'}</div></div>
+          <div class="row" style="margin:0;flex-wrap:nowrap">
+            <button class="btn" data-o="${b.id}">Open</button>
+            <button class="btn d" data-r="${b.id}">Remove</button></div>
+        </div>`).join('') : '<div class="empty" style="margin:0">No brands yet. Add one above.</div>';
+      $('bl').querySelectorAll('[data-o]').forEach(x => x.onclick = safe(() => openBrand(+x.dataset.o)));
+      $('bl').querySelectorAll('[data-r]').forEach(x => x.onclick = safe(async () => {
+        if (!confirm('Remove this brand? Products stay, they just lose the brand.')) return;
+        await api('/brands/' + x.dataset.r, { method: 'DELETE' }); toast('Brand removed'); await loadBrands(); await loadProducts()
+      }))
+    }
+    on('bad', safe(async () => {
+      const r = await (await api('/brands', { method: 'POST', body: { name: $('bn').value } })).json();
+      $('bn').value = ''; toast(r.added + ' brand' + (r.added === 1 ? '' : 's') + ' added'); await loadBrands()
+    }));
+
+    async function openBrand(id) {
+      curBrand = brands.find(b => b.id === id);
+      if (!curBrand) return;
+      show('brand');
+      $('bktitle').textContent = curBrand.name;
+      $('bkrn').value = curBrand.name;
+      await loadBrandProducts()
+    }
+    $('bkback').onclick = () => show('brands');
+    on('bksave', safe(async () => {
+      const v = $('bkrn').value.trim();
+      if (!v) throw new Error('Enter a brand name');
+      await api('/brands/' + curBrand.id, { method: 'PATCH', body: { name: v } });
+      toast('Brand renamed'); await loadBrands();
+      curBrand = brands.find(b => b.id === curBrand.id) || curBrand;
+      $('bktitle').textContent = $('bkrn').value.trim()
+    }));
+    on('bkdel', safe(async () => {
+      if (!confirm('Remove this brand? Products stay, they just lose the brand.')) return;
+      await api('/brands/' + curBrand.id, { method: 'DELETE' });
+      toast('Brand removed'); curBrand = null; show('brands'); await loadBrands(); await loadProducts()
+    }));
+    on('bkadd', safe(async () => {
+      const r = await (await api('/products/add', { method: 'POST', body: { urls: $('bkurls').value.split('\n'), brand_id: curBrand.id } })).json();
+      toast(r.added + ' added' + (r.errors.length ? ', ' + r.errors.length + ' failed: ' + r.errors[0] : ''), r.errors.length && !r.added);
+      $('bkurls').value = ''; await loadBrandProducts(); await loadBrands()
+    }));
+
+    async function loadProducts() {
+      prods = await (await api('/products?q=' + encodeURIComponent($('q').value))).json();
+      renderProducts()
+    }
+    let qt; $('q').oninput = () => { clearTimeout(qt); qt = setTimeout(safe(loadProducts), 250) };
+
+    function qrBadge(p) {
+      return p.qr_generated
+        ? '<span class="qrb ok"><span class="dot ok"></span>QR generated</span>'
+        : '<span class="qrb no"><span class="dot"></span>QR not generated</span>'
+    }
+
+    async function download(url, fallback) {
+      const r = await api(url);
+      const blob = await r.blob();
+      const cd = r.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename="?([^";]+)"?/);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = m ? m[1] : fallback;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000)
+    }
+
+    function productCard(p, brandId) {
+      return `<div class="card res">
+  ${p.image ? `<img loading="lazy" src="${esc(p.image)}" alt="${esc(p.name)}">` : '<div class="ph">No picture</div>'}
+  <div class="n">${esc(p.name)}</div>
+  <div><span class="sku">${p.sku ? 'SKU: ' + esc(p.sku) : 'No SKU yet'}</span> <button class="lnk" data-c="${p.id}">Edit SKU</button></div>
+  <a class="u" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.url)}</a>
+  <div>${qrBadge(p)}</div>
+  ${brandId === undefined ? `<label class="chk">Brand <select data-b="${p.id}">${brandOpts(p.brand_id)}</select></label>` : ''}
+  <label class="chk"><input type="checkbox" data-s="${p.id}" ${sel.has(p.id) ? 'checked' : ''}>Include in ZIP</label>
+  <button class="btn pri" data-q="${p.id}" data-qb="${brandId || 0}">Generate QR</button>
+  <button class="btn d" data-d="${p.id}">Delete</button></div>`
+    }
+
+    function bindCards(root, list, brandId, reload) {
+      root.querySelectorAll('[data-s]').forEach(x => x.onchange = () => { x.checked ? sel.add(+x.dataset.s) : sel.delete(+x.dataset.s); count() });
+      root.querySelectorAll('[data-c]').forEach(x => x.onclick = safe(async () => {
+        const p = list.find(y => y.id == x.dataset.c);
+        const v = prompt('SKU printed under the QR (as on the label)', p.sku || '');
+        if (v === null) return;
+        await api('/products/' + p.id, { method: 'PATCH', body: { sku: v } }); reload()
+      }));
+      root.querySelectorAll('[data-b]').forEach(x => x.onchange = safe(async () => {
+        await api('/products/' + x.dataset.b + '/brand', { method: 'PATCH', body: { brand_id: x.value ? +x.value : null } });
+        toast('Brand updated'); await loadBrands(); reload()
+      }));
+      root.querySelectorAll('[data-q]').forEach(x => x.onclick = safe(async () => {
+        x.disabled = true; const t = x.textContent; x.textContent = 'Generating…';
+        try {
+          await download(`/products/${x.dataset.q}/qr.png?brand=${x.dataset.qb}`, 'qr.png');
+          const p = list.find(y => y.id == x.dataset.q); if (p) p.qr_generated = true;
+          toast('QR downloaded'); reload()
+        } finally { x.disabled = false; x.textContent = t }
+      }));
+      root.querySelectorAll('[data-d]').forEach(x => x.onclick = safe(async () => {
+        if (!confirm('Delete this product?')) return;
+        await api('/products/' + x.dataset.d, { method: 'DELETE' });
+        sel.delete(+x.dataset.d); await loadBrands(); reload()
+      }))
+    }
+
+    function renderProducts() {
+      $('pe').hidden = prods.length > 0;
+      $('pg').innerHTML = prods.map(p => productCard(p)).join('');
+      bindCards($('pg'), prods, undefined, loadProducts);
+      count()
+    }
+    function count() { $('cnt').textContent = prods.length + ' products, ' + (sel.size ? sel.size + ' selected' : 'ZIP will include all') }
+
+    let bkprods = [];
+    async function loadBrandProducts() {
+      if (!curBrand) return;
+      bkprods = await (await api('/products?brand=' + curBrand.id)).json();
+      $('bkempty').hidden = bkprods.length > 0;
+      $('bksub').innerHTML = `<b>${esc(curBrand.name)}</b> &mdash; every product with its URL, SKU and QR status.`;
+      $('bkcnt').textContent = bkprods.length + ' product' + (bkprods.length === 1 ? '' : 's') + ' in this brand';
+      $('bkpg').innerHTML = bkprods.map(p => productCard(p, curBrand.id)).join('');
+      bindCards($('bkpg'), bkprods, curBrand.id, loadBrandProducts)
+    }
+    on('bkexp', safe(async () => {
+      if (!bkprods.length) throw new Error('No products in this brand yet');
+      $('bkexp').textContent = 'Making ZIP…';
+      try {
+        const r = await api('/export', { method: 'POST', body: { ids: bkprods.map(p => p.id), brand_id: curBrand.id } });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = 'tryvtri-qr-codes.zip'; a.click();
+        bkprods.forEach(p => p.qr_generated = true); loadBrandProducts()
+      } finally { $('bkexp').textContent = 'Download brand ZIP' }
+    }));
+
+    on('imp', async () => { $('imp').textContent = 'Importing...'; try {
+      const r = await (await api('/products/import-store', { method: 'POST', body: { url: $('store').value } })).json();
+      const tid = r.task_id;
+      for (let i = 0; i < 1200; i++) {
+        await new Promise(res => setTimeout(res, 800));
+        const st = await (await api('/products/import-store/status?task_id=' + tid)).json();
+        if (st.status === 'done') { toast(st.added + ' products imported' + (st.message ? ' \u2014 ' + st.message : '') ); await loadProducts(); await loadBrands(); break }
+        if (st.status === 'error' || st.status === 'failed') { toast(st.message || 'Import failed', 1); break }
+        $('imp').textContent = (st.added ?? 0) + ' imported\u2026'
+      }
+    } finally { $('imp').textContent = 'Import catalog' } });
+    on('addl', async () => {
+      const r = await (await api('/products/add', { method: 'POST', body: { urls: $('urls').value.split('\n') } })).json();
+      toast(r.added + ' added' + (r.errors.length ? ', ' + r.errors.length + ' failed: ' + r.errors[0] : ''), r.errors.length && !r.added); $('urls').value = ''; loadProducts()
+    });
+    on('exp', async () => {
+      $('exp').textContent = 'Making ZIP...'; try {
+        const r = await api('/export', { method: 'POST', body: { ids: [...sel], per_branch: $('pb').checked } });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = 'tryvtri-qr-codes.zip'; a.click();
+        prods.forEach(p => { if (!sel.size || sel.has(p.id)) p.qr_generated = true }); renderProducts()
+      } finally { $('exp').textContent = 'Download ZIP' }
+    });
+
+    ensureToken().then(safe(async () => { await loadBrands(); await loadProducts() })).catch(e => toast(e.message, 1));
+  </script>
+</body>
+
+</html>

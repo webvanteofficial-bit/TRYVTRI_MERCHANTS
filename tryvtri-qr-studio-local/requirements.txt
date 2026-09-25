@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+httpx
+pydantic
+qrcode
+Pillow
+beautifulsoup4
+tinydb
