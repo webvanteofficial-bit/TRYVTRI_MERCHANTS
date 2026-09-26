@@ -1,5 +1,36 @@
-import { pool, query } from '../lib/db.js';
-import { env } from '../lib/env.js';
+import pg from 'pg';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function parseFile(file) {
+  const out = {};
+  try {
+    if (!fs.existsSync(file)) return out;
+    for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line || line.startsWith('#')) continue;
+      const i = line.indexOf('=');
+      if (i < 1) continue;
+      out[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+    }
+  } catch {
+    /* ignore */
+  }
+  return out;
+}
+
+const env = {
+  ...parseFile(path.join(ROOT, '.env')),
+  ...parseFile(path.join(ROOT, '.env.local')),
+};
+const url = process.env.DATABASE_URL || env.DATABASE_URL || '';
+if (!url) {
+  console.error('DATABASE_URL is not set. Fill in .env.local first.');
+  process.exit(1);
+}
 
 const SQL = `
 CREATE TABLE IF NOT EXISTS merchants (
@@ -40,22 +71,28 @@ CREATE TABLE IF NOT EXISTS qr_records (
 );
 
 CREATE INDEX IF NOT EXISTS qr_records_merchant_idx ON qr_records (merchant_id, created_at DESC);
+
+GRANT USAGE ON SCHEMA public TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO service_role;
 `;
 
 async function main() {
-  if (!env('DATABASE_URL')) {
-    console.error('DATABASE_URL is not set. Fill in .env.local first.');
-    process.exit(1);
-  }
-  console.log('Connecting to Postgres …');
-  await query(SQL);
-  const tables = await query(
+  const cfg = { connectionString: url, max: 2, connectionTimeoutMillis: 15000 };
+  if (/supabase|sslmode=require/i.test(url)) cfg.ssl = { rejectUnauthorized: false };
+  const client = new pg.Client(cfg);
+  await client.connect();
+  console.log('Applying schema ...');
+  await client.query(SQL);
+  const tables = await client.query(
     `SELECT table_name FROM information_schema.tables
      WHERE table_schema='public' AND table_name IN ('merchants','products','qr_records')
      ORDER BY table_name`
   );
   console.log('Ready. Tables:', tables.rows.map((r) => r.table_name).join(', '));
-  await pool.end();
+  await client.end();
 }
 
 main().catch((e) => {

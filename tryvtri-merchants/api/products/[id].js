@@ -1,11 +1,17 @@
-import { query } from '../../lib/db.js';
+import { db } from '../../lib/supabase.js';
 import { requireAuth } from '../../lib/auth.js';
 import { handler, ApiError, body } from '../../lib/http.js';
 
 async function owned(id, merchantId) {
-  const r = await query('SELECT * FROM products WHERE id = $1 AND merchant_id = $2', [id, merchantId]);
-  if (!r.rows.length) throw new ApiError(404, 'Product not found');
-  return r.rows[0];
+  const r = await db()
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .eq('merchant_id', merchantId)
+    .limit(1);
+  if (r.error) throw new ApiError(500, 'Could not load that product');
+  if (!r.data.length) throw new ApiError(404, 'Product not found');
+  return r.data[0];
 }
 
 function normalizeUrl(url) {
@@ -27,7 +33,8 @@ export default handler(async (req, res) => {
 
   if (req.method === 'DELETE') {
     await owned(id, merchant.id);
-    await query('DELETE FROM products WHERE id = $1', [id]);
+    const r = await db().from('products').delete().eq('id', id).eq('merchant_id', merchant.id);
+    if (r.error) throw new ApiError(500, 'Could not delete that product');
     return res.status(200).json({ ok: true });
   }
 
@@ -38,12 +45,16 @@ export default handler(async (req, res) => {
     const sku = b.sku !== undefined ? String(b.sku).trim() : p.sku;
     const image = b.image !== undefined ? String(b.image).trim() : p.image;
     const url = b.url !== undefined && String(b.url).trim() !== p.url ? normalizeUrl(b.url) : p.url;
-    const r = await query(
-      `UPDATE products SET name = $1, sku = $2, url = $3, image = $4
-       WHERE id = $5 AND merchant_id = $6 RETURNING *`,
-      [name, sku, url, image, id, merchant.id]
-    );
-    return res.status(200).json(r.rows[0]);
+
+    const r = await db()
+      .from('products')
+      .update({ name, sku, url, image })
+      .eq('id', id)
+      .eq('merchant_id', merchant.id)
+      .select('*')
+      .single();
+    if (r.error) throw new ApiError(500, 'Could not update that product');
+    return res.status(200).json(r.data);
   }
 
   if (req.method === 'GET') {

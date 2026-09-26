@@ -1,4 +1,4 @@
-import { query } from '../../lib/db.js';
+import { db, searchEscape } from '../../lib/supabase.js';
 import { requireAuth } from '../../lib/auth.js';
 import { handler, ApiError, body } from '../../lib/http.js';
 
@@ -17,38 +17,28 @@ function nameFromUrl(url) {
   }
 }
 
-const WITH_COUNT = `
-  SELECT p.*, COALESCE(c.n, 0)::int AS qr_count
-  FROM products p
-  LEFT JOIN (
-    SELECT product_id, count(*)::int AS n
-    FROM qr_records
-    WHERE merchant_id = $1 AND product_id IS NOT NULL
-    GROUP BY product_id
-  ) c ON c.product_id = p.id
-`;
-
 export default handler(async (req, res) => {
   const merchant = requireAuth(req);
 
   if (req.method === 'GET') {
-    const q = String(req.query.q || '').trim();
-    let rows;
+    const q = searchEscape(String(req.query.q || '').trim());
+    let qry = db()
+      .from('products')
+      .select('id, merchant_id, name, url, sku, image, qr_generated, created_at, qr_records(count)')
+      .eq('merchant_id', merchant.id);
+
     if (q) {
-      const like = '%' + q.replace(/[\\%_]/g, (c) => '\\' + c) + '%';
-      const r = await query(
-        `${WITH_COUNT}
-         WHERE p.merchant_id = $1 AND (p.name ILIKE $2 OR p.sku ILIKE $2 OR p.url ILIKE $2)
-         ORDER BY p.id DESC LIMIT 300`,
-        [merchant.id, like]
-      );
-      rows = r.rows;
-    } else {
-      const r = await query(`${WITH_COUNT} WHERE p.merchant_id = $1 ORDER BY p.id DESC LIMIT 300`, [
-        merchant.id,
-      ]);
-      rows = r.rows;
+      const like = '%' + q + '%';
+      qry = qry.or(`name.ilike.${like},sku.ilike.${like},url.ilike.${like}`);
     }
+
+    const r = await qry.order('id', { ascending: false }).limit(300);
+    if (r.error) throw new ApiError(500, 'Could not load your products');
+
+    const rows = r.data.map((p) => {
+      const { qr_records, ...rest } = p;
+      return { ...rest, qr_count: qr_records && qr_records[0] ? qr_records[0].count : 0 };
+    });
     return res.status(200).json(rows);
   }
 
@@ -69,17 +59,19 @@ export default handler(async (req, res) => {
     const image = String(b.image || '').trim();
     const name = String(b.name || '').trim() || nameFromUrl(url);
 
-    try {
-      const r = await query(
-        `INSERT INTO products (merchant_id, name, url, sku, image)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *, 0 AS qr_count`,
-        [merchant.id, name, url, sku, image]
-      );
-      return res.status(201).json(r.rows[0]);
-    } catch (e) {
-      if (e.code === '23505') throw new ApiError(409, 'This product URL is already in your catalog');
-      throw e;
+    const r = await db()
+      .from('products')
+      .insert({ merchant_id: merchant.id, name, url, sku, image })
+      .select('id, merchant_id, name, url, sku, image, qr_generated, created_at')
+      .single();
+
+    if (r.error) {
+      if (r.error.code === '23505') {
+        throw new ApiError(409, 'This product URL is already in your catalog');
+      }
+      throw new ApiError(500, 'Could not save that product');
     }
+    return res.status(201).json({ ...r.data, qr_count: 0 });
   }
 
   throw new ApiError(405, 'Method not allowed');
