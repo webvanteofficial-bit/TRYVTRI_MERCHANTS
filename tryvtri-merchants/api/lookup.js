@@ -179,6 +179,66 @@ function slugTitle(url) {
   }
 }
 
+function absUrl(u, base) {
+  const s = String(u || '').trim();
+  if (!s || /^data:/i.test(s)) return '';
+  try {
+    return new URL(s, base).toString();
+  } catch {
+    return '';
+  }
+}
+
+function handleFrom(url) {
+  try {
+    const seg = new URL(url).pathname.split('/').filter(Boolean).pop() || '';
+    return decodeURIComponent(seg).replace(/\.[a-z0-9]+$/i, '');
+  } catch {
+    return '';
+  }
+}
+
+function firstHtmlImage(html, base, handle) {
+  const tags = html.match(/<img\b[^>]*>/gi) || [];
+  const attrs = [
+    'data-high-src',
+    'data-src',
+    'data-lazy-src',
+    'data-original',
+    'data-zoom',
+    'data-image',
+    'data-srcset',
+    'srcset',
+    'src',
+  ];
+  const bad = /(logo|icon|payment|whatsapp|facebook|twitter|instagram|share|calendar|check|size[-_]?chart|sprite|placeholder|avatar|flag|spinner|arrow|favicon)/i;
+  let best = '';
+  let bestScore = 0;
+  for (const tag of tags) {
+    let val = '';
+    for (const a of attrs) {
+      const m = new RegExp('\\b' + a + '\\s*=\\s*["\']([^"\']+)["\']', 'i').exec(tag);
+      if (m && m[1]) {
+        val = m[1];
+        if (a === 'srcset' || a === 'data-srcset') val = String(val).split(',')[0];
+        break;
+      }
+    }
+    if (!val) continue;
+    const u = absUrl(decode(String(val).trim().split(/\s+/)[0]), base);
+    if (!/^https?:/i.test(u)) continue;
+    if (!/\.(?:jpe?g|png|webp|avif|gif)(?:[?#]|$)/i.test(u)) continue;
+    if (bad.test(u)) continue;
+    let score = 2;
+    if (handle && u.toLowerCase().includes(handle.toLowerCase())) score += 3;
+    if (score > bestScore) {
+      bestScore = score;
+      best = u;
+    }
+  }
+  return best;
+}
+
 /* --------------------------------------------------------------- handler */
 
 export default handler(async (req, res) => {
@@ -259,12 +319,19 @@ export default handler(async (req, res) => {
   }
   if (sku === 'null' || sku === 'undefined') sku = '';
 
-  const image =
+  const base = (page && page.finalUrl) || u.toString();
+
+  let image = absUrl(
     (fromLd && fromLd.image) ||
-    (shopJson && shopJson.image) ||
-    meta['og:image'] ||
-    meta['twitter:image'] ||
-    '';
+      (shopJson && shopJson.image) ||
+      meta['og:image'] ||
+      meta['og:image:url'] ||
+      meta['twitter:image'] ||
+      '',
+    base
+  );
+  if (/\.svg(?:[?#]|$)/i.test(image)) image = '';
+  if (!image && html) image = firstHtmlImage(html, base, handleFrom(u.toString()));
 
   const price =
     (fromLd && fromLd.price) ||

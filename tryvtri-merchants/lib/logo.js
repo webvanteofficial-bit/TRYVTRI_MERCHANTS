@@ -1,19 +1,10 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(HERE, '..', 'assets', 'tryvtri-logo.png');
+import { LOGO_PNG } from './embedded.js';
 
 let cache;
 
 export function logoDataUri() {
   if (cache !== undefined) return cache;
-  try {
-    cache = 'data:image/png;base64,' + fs.readFileSync(FILE).toString('base64');
-  } catch {
-    cache = '';
-  }
+  cache = LOGO_PNG ? 'data:image/png;base64,' + LOGO_PNG : '';
   return cache;
 }
 

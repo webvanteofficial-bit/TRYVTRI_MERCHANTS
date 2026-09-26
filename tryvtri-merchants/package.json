@@ -8,6 +8,7 @@
     "dev:web": "vite",
     "dev:api": "node server/dev.js",
     "build": "tsc --noEmit && vite build",
+    "build:fonts": "node scripts/build-fonts.mjs",
     "preview": "vite preview",
     "db:migrate": "node scripts/migrate.js",
     "deploy": "vercel --prod"
@@ -16,6 +17,7 @@
     "@supabase/supabase-js": "^2.117.2",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
+    "opentype.js": "^2.0.0",
     "pg": "^8.13.1",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
@@ -34,6 +36,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.0",
     "express": "^4.21.2",
+    "subset-font": "^2.9.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"
   }

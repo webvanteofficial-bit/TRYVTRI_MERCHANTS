@@ -38,6 +38,9 @@ function ProductCard({
   const [editing, setEditing] = useState(false);
   const [sku, setSku] = useState(p.sku);
   const [busy, setBusy] = useState(false);
+  const [imgBad, setImgBad] = useState(false);
+
+  useEffect(() => setImgBad(false), [p.image]);
 
   async function saveSku() {
     setBusy(true);
@@ -69,13 +72,8 @@ function ProductCard({
   return (
     <div className={'pcard' + (flash ? ' flash' : '')}>
       <div className="pcard-media">
-        {p.image ? (
-          <img
-            loading="lazy"
-            src={p.image}
-            alt=""
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-          />
+        {p.image && !imgBad ? (
+          <img loading="lazy" src={p.image} alt="" onError={() => setImgBad(true)} />
         ) : (
           <div className="ph">No image</div>
         )}
@@ -162,18 +160,47 @@ export default function Products() {
   const [sku, setSku] = useState('');
   const [saveErr, setSaveErr] = useState('');
   const [saving, setSaving] = useState(false);
+  const [lkImgBad, setLkImgBad] = useState(false);
   const urlRef = useRef<HTMLInputElement>(null);
+
+  const backfilled = useRef<Set<number>>(new Set());
+
+  const backfill = useCallback(async (rows: Product[]) => {
+    const queue = rows.filter((p) => p.url && !p.image && !backfilled.current.has(p.id)).slice(0, 20);
+    queue.forEach((p) => backfilled.current.add(p.id));
+    if (!queue.length) return;
+    await Promise.all(
+      Array.from({ length: 3 }, async () => {
+        while (queue.length) {
+          const p = queue.shift();
+          if (!p) break;
+          try {
+            const r = await lookupProduct(p.url);
+            if (!r.image) continue;
+            const up = await api<Product>('/products/' + p.id, {
+              method: 'PATCH',
+              body: { image: r.image },
+            });
+            setItems((old) =>
+              old.map((x) => (x.id === p.id ? { ...x, image: up.image || r.image } : x))
+            );
+          } catch {}
+        }
+      })
+    );
+  }, []);
 
   const load = useCallback(async (query: string) => {
     try {
       const rows = await api<Product[]>('/products?q=' + encodeURIComponent(query));
       setItems(rows);
+      backfill(rows);
     } catch (e) {
       toast((e as Error).message, true);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [backfill]);
 
   useEffect(() => {
     setQ(new URLSearchParams(loc.search).get('q') || '');
@@ -192,6 +219,7 @@ export default function Products() {
     try {
       const r = await lookupProduct(url.trim());
       setFound(r);
+      setLkImgBad(false);
       setName(r.name);
       setSku(r.sku);
       if (!r.sku_found) toast('SKU not found — enter it manually', true);
@@ -316,7 +344,11 @@ export default function Products() {
         {found && (
           <div className="lookup">
             <div className="lookup-thumb">
-              {found.image ? <img src={found.image} alt="" onError={(e) => (e.currentTarget.style.display = 'none')} /> : 'No image'}
+              {found.image && !lkImgBad ? (
+                <img src={found.image} alt="" onError={() => setLkImgBad(true)} />
+              ) : (
+                'No image'
+              )}
             </div>
 
             <div className="lookup-main">

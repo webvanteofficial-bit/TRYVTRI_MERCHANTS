@@ -1,5 +1,7 @@
 import QRCode from 'qrcode';
 import sharp from 'sharp';
+import opentype from 'opentype.js';
+import { FONT_400, FONT_700 } from './embedded.js';
 import { logoDataUri, logoSvgFallback } from './logo.js';
 
 const BRAND = 'TRYVTRI';
@@ -50,9 +52,45 @@ export function track(url) {
   }
 }
 
+const fontCache = {};
+
+function fontFor(weight) {
+  const w = weight >= 700 ? 700 : 400;
+  if (!fontCache[w]) {
+    const b = Buffer.from(w === 700 ? FONT_700 : FONT_400, 'base64');
+    const ab = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+    fontCache[w] = opentype.parse(ab);
+  }
+  return fontCache[w];
+}
+
 function text(x, y, str, size, fill, weight, spacing) {
-  const ls = spacing ? ` letter-spacing="${spacing}"` : '';
-  return `<text x="${x}" y="${y}" font-family="Arial, Helvetica, sans-serif" font-size="${size}" font-weight="${weight || 400}" fill="${fill}" text-anchor="middle"${ls}>${esc(str)}</text>`;
+  const s = String(str ?? '');
+  if (!s) return '';
+  try {
+    const font = fontFor(weight);
+    let d;
+    if (spacing) {
+      const chars = Array.from(s);
+      const adv = chars.map((c) => font.getAdvanceWidth(c, size));
+      const total = adv.reduce((a, n) => a + n, 0) + spacing * Math.max(0, chars.length - 1);
+      let cx = x - total / 2;
+      d = chars
+        .map((c, i) => {
+          const seg = font.getPath(c, cx, y, size).toPathData(2);
+          cx += adv[i] + spacing;
+          return seg;
+        })
+        .join(' ');
+    } else {
+      const w = font.getAdvanceWidth(s, size);
+      d = font.getPath(s, x - w / 2, y, size).toPathData(2);
+    }
+    return `<path d="${d}" fill="${fill}"/>`;
+  } catch {
+    const ls = spacing ? ` letter-spacing="${spacing}"` : '';
+    return `<text x="${x}" y="${y}" font-family="Arial, Helvetica, sans-serif" font-size="${size}" font-weight="${weight || 400}" fill="${fill}" text-anchor="middle"${ls}>${esc(s)}</text>`;
+  }
 }
 
 function logoGroup(cx, cy) {
