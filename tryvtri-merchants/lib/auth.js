@@ -1,9 +1,13 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { createHash } from 'node:crypto';
 import { env } from './env.js';
 import { ApiError } from './http.js';
 
-const SECRET = env('JWT_SECRET', 'tryvtri-dev-secret-change-me');
+const KEY = env('SUPABASE_SECRET_KEY', env('SUPABASE_SERVICE_ROLE_KEY', ''));
+const SECRET =
+  env('JWT_SECRET', '') ||
+  (KEY ? createHash('sha256').update('tryvtri-jwt:' + KEY).digest('hex') : 'tryvtri-dev-secret-change-me');
 
 export const hashPassword = (pw) => bcrypt.hashSync(pw, 10);
 export const checkPassword = (pw, hash) => bcrypt.compareSync(pw, hash);

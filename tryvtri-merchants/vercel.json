@@ -1,6 +1,23 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "framework": null,
+  "functions": {
+    "api/lookup.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "api/qr.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "api/signup.js": { "maxDuration": 15 },
+    "api/login.js": { "maxDuration": 15 },
+    "api/stats.js": { "maxDuration": 15 },
+    "api/records.js": { "maxDuration": 15 },
+    "api/products/index.js": { "maxDuration": 15 },
+    "api/products/[id].js": { "maxDuration": 15 }
+  },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
